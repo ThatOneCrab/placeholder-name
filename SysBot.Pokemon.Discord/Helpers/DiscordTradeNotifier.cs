@@ -48,7 +48,7 @@ public class DiscordTradeNotifier<T>(T Data, PokeTradeTrainerInfo Info, int Code
         var etaMessage = $"Estimated:{adjustedEta:F1} min(s) ";
 
         // Build embed
-        var template = new TemplateTrade<T>(pkm, Context, Hub);
+        var template = new TemplateTrade<T>(pkm, Context, Hub, info); // Pass 'info' as the required argument
         EmbedBuilder embed = template.Generate(positionNum, etaMessage);
 
         // Obtain display info

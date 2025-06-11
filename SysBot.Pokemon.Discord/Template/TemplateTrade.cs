@@ -4,39 +4,76 @@ using PKHeX.Core;
 
 namespace SysBot.Pokemon.Discord;
 
-public class TemplateTrade<T>(PKM pkm, SocketCommandContext Context, PokeTradeHub<T> Hub) where T : PKM, new()
+public class TemplateTrade<T>(PKM pkm, SocketCommandContext Context, PokeTradeHub<T> Hub, PokeTradeDetail<T> Detail) where T : PKM, new()
 {
     private readonly PKM pkm = pkm;
     private readonly PKMString<T> pkmString = new(pkm, Hub);
     private readonly SocketCommandContext Context = Context;
     private readonly PokeTradeHub<T> Hub = Hub;
+    private readonly PokeTradeDetail<T> Detail = Detail;
 
     private Color SetColor()
     {
-        return pkm.IsShiny && pkm.ShinyXor == 0 ? Color.Gold : pkm.IsShiny ? Color.LighterGrey : Color.Teal;
+        return Detail.Type switch
+        {
+
+            PokeTradeType.Clone => Color.Purple,
+            PokeTradeType.Specific => pkm.IsShiny && pkm.ShinyXor == 0 ? Color.Gold : pkm.IsShiny ? Color.LighterGrey : Color.Teal,
+            _ => Color.Purple
+        };
     }
-    
+
+    public static string GetServerNickname(IGuildUser user)
+    {
+        try
+        {
+            return user.DisplayName;
+        }
+        catch
+        {
+            return user.GlobalName;
+        }
+    }
+
     private EmbedAuthorBuilder SetAuthor()
     {
+        var user = Context.User;
+        string? trainerName;
+        try
+        {
+            // Ensure 'user' is not null before casting to IGuildUser
+            if (user is IGuildUser guildUser)
+            {
+                trainerName = GetServerNickname(guildUser);
+            }
+            else
+            {
+                trainerName = user.Username;
+            }
+        }
+        catch
+        {
+            trainerName = user.Username;
+        }
         EmbedAuthorBuilder author = new()
         {
-            Name = $"{Context.User.Username}'s Pokémon",
+            Name = $"{trainerName}'s Pokémon",
             IconUrl = pkmString.ballImg
         };
         return author;
     }
 
-    private string SetThumbnailUrl()
+    private string SetImageUrl()
     {
         return pkmString.pokeImg;
     }
 
-    private EmbedFooterBuilder SetFooter(int positionNum = 1, string etaMessage = "")
+    private EmbedFooterBuilder SetFooter(int positionNum, string etaMessage = "")
     {
         // Current queue position
-        string Position = $"Current Position:{positionNum}";
+        string Position = $"Current Position: {positionNum}";
         // Trainer info
-        string Trainer = $"OT:{pkm.OriginalTrainerName} | TID:{pkm.DisplayTID} | SID:{pkm.DisplaySID}";
+        string Trainer = $"Thank you!";
 
         // display combined footer content
         string FooterContent = "";
@@ -68,15 +105,30 @@ public class TemplateTrade<T>(PKM pkm, SocketCommandContext Context, PokeTradeHu
 
     private void SetFiled2(EmbedBuilder embed)
     {
-        // Obtain holditem's info
+
         string heldItem = pkmString.holdItem;
-        if (heldItem == "")
-            return ;
+        if (string.IsNullOrEmpty(heldItem))
+            return;
 
-        string filedName = $"**Item Held**: {heldItem}";
-        string filedValue = "** **";
+        string fieldName = $"**Item Held**: {heldItem}";
+        string fieldValue = "** **";
 
-        embed.AddField(filedName, filedValue, false);
+
+        string itemImageUrl = GetSerebiiImageUrl(heldItem);
+
+        embed.AddField(fieldName, fieldValue, false);
+
+        if (!string.IsNullOrEmpty(itemImageUrl))
+        {
+            embed.WithThumbnailUrl(itemImageUrl);
+        }
+    }
+
+    private string GetSerebiiImageUrl(string heldItem)
+    {
+
+        string formattedItemName = heldItem.ToLower().Replace(" ", "");
+        return $"https://www.serebii.net/itemdex/sprites/{formattedItemName}.png";
     }
 
     private void SetFiled3_1(EmbedBuilder embed)
@@ -101,33 +153,42 @@ public class TemplateTrade<T>(PKM pkm, SocketCommandContext Context, PokeTradeHu
         // LINQ C#: If pkm.generation is 9, check secondCondition, if secondCondition is true, result will be valueIfTrue otherwise
         // valueIfFalse if secondcondition is false, result will be empty string if pkm.generation is not 9
         // LINQ C#: if TeraTypeEmoji's option is enabled in the settings, use TeraTypeEmoji, otherwise use text 
-        trademessage += pkm.Generation != 9 ? "" : Hub.Config.Discord.EmbedSetting.TeraTypeEmoji ? $"**Tera Type:** {pkmString.TeraTypeEmoji}\n" : $"**Tera Type:** {teraType}\n";
+
         trademessage += $"**Level:** {level}\n";
+        trademessage += $"**Tera Type:** {teraType}\n";
         trademessage += $"**Ability:** {ability}\n";
         trademessage += $"**Nature:** {nature}\n";
         trademessage += $"**Scale:** {scale}\n";
-        trademessage += mark!="" ? $"**Pokemon Mark:** {mark}\n" : "";
-                
+        trademessage += mark != "" ? $"**Pokemon Mark:** {mark}\n" : "";
+        trademessage += $"**IVs:** {string.Join("/", pkmString.IVs)}";
+
+        if (pkm.EV_HP > 0 || pkm.EV_ATK > 0 || pkm.EV_DEF > 0 || pkm.EV_SPA > 0 || pkm.EV_SPD > 0 || pkm.EV_SPE > 0)
+        {
+            trademessage += $"\n**EVs:** {pkm.EV_HP} HP / {pkm.EV_ATK} Atk / {pkm.EV_DEF} Def / {pkm.EV_SPA} SpA / {pkm.EV_SPD} SpD / {pkm.EV_SPE} Spe";
+        }
+
         // Build info
-        string filedName = $"Pokémon Stats:";
+        string filedName = $"__Pokémon Stats:__";
         string filedValue = $"{trademessage}";
 
         embed.AddField(filedName, filedValue, true);
     }
 
     private void SetFiled3_2(EmbedBuilder embed)
-    {                
+    {
         string moveset = "";
         for (int i = 0; i < pkmString.Moves.Count; i++)
         {
             // Obtain Moveset
             string moveString = pkmString.Moves[i];
+            if (moveString == "(None)")
+                continue;
             // Obtain MovePP
             int movePP = i == 0 ? pkm.Move1_PP : i == 1 ? pkm.Move2_PP : i == 2 ? pkm.Move3_PP : pkm.Move4_PP;
             // Setup moveEmoji
             string moveEmoji = Hub.Config.Discord.EmbedSetting.UseMoveEmoji ? pkmString.MovesEmoji[i] : "";
             // Generate Moveset's info
-            moveset += $"- {moveEmoji}{moveString} ({movePP}PP)\n";
+            moveset += $" {moveEmoji}{moveString} \n";
         }
 
         string FiledName = $"Moveset:";
@@ -136,63 +197,41 @@ public class TemplateTrade<T>(PKM pkm, SocketCommandContext Context, PokeTradeHu
         embed.AddField(FiledName, FiledValue, true);
     }
 
-    private void SetFiled4_1(EmbedBuilder embed)
-    {            
-        string IVs = "";
-        IVs += $"- {pkmString.IVs[0]} HP\n";
-        IVs += $"- {pkmString.IVs[1]} ATK\n";
-        IVs += $"- {pkmString.IVs[2]} DEF\n";
-        IVs += $"- {pkmString.IVs[3]} SPA\n";
-        IVs += $"- {pkmString.IVs[4]} SPD\n";
-        IVs += $"- {pkmString.IVs[5]} SPE\n";
-
-        string filedName = $"Pokémon IVs:";
-        string filedValue = IVs;
-
-        embed.AddField(filedName, filedValue, true);        
-            
-    }
-
-    private void SetFiled4_2(EmbedBuilder embed)
-    {            
-        string EVs = "";
-        EVs += $"- {pkm.EV_HP} HP\n";
-        EVs += $"- {pkm.EV_ATK} ATK\n";
-        EVs += $"- {pkm.EV_DEF} DEF\n";
-        EVs += $"- {pkm.EV_SPA} SPA\n";
-        EVs += $"- {pkm.EV_SPD} SPD\n";
-        EVs += $"- {pkm.EV_SPE} SPE\n";
-
-        string filedName = $"Pokémon EVs:";
-        string filedValue = EVs;
-            
-        embed.AddField(filedName, filedValue, true);
-    }
-
     private static void SetFiledTemp(EmbedBuilder embed)
-    {                
+    {
         embed.AddField($"** **", $"** **", true);
     }
-   
-    public EmbedBuilder Generate(int positionNum = 1, string etaMessage = "")
-    {   
-        // Build discord Embed
-        var embed = new EmbedBuilder { 
-            Color = SetColor(), 
-            Author = SetAuthor(), 
-            Footer = SetFooter(), 
-            ThumbnailUrl = SetThumbnailUrl(),
-            };
 
-        // Build embed files        
-        SetFiled1(embed);
-        SetFiled2(embed);
-        SetFiled3_1(embed);
-        SetFiledTemp(embed);
-        SetFiled3_2(embed);
-        SetFiled4_1(embed);
-        SetFiledTemp(embed);
-        SetFiled4_2(embed);
+    public EmbedBuilder Generate(int positionNum, string etaMessage = "")
+    {
+        var nonTrade = Detail.Type is PokeTradeType.Clone or PokeTradeType.Dump or PokeTradeType.Seed;
+        var image = Detail.Type switch
+        {
+            PokeTradeType.Clone => "https://raw.githubusercontent.com/plusReedy/Images-Sprites-Balls/refs/heads/main/clone.png",
+            PokeTradeType.Dump => "https://raw.githubusercontent.com/plusReedy/Images-Sprites-Balls/refs/heads/main/dump.png",
+            PokeTradeType.Seed => "https://raw.githubusercontent.com/plusReedy/Images-Sprites-Balls/refs/heads/main/seed.png",
+            _ => SetImageUrl()
+        };
+        // Build discord Embed
+        var embed = new EmbedBuilder
+        {
+            Color = SetColor(),
+            Author = nonTrade ? null : SetAuthor(),
+            Description = nonTrade ? $"<@{Detail.Trainer.ID}> - Added to the {Detail.Type} Queue" : null,
+            Footer = SetFooter(positionNum),
+            ImageUrl = image,
+
+        };
+        if (!nonTrade)
+        {
+            // Build embed files        
+            SetFiled1(embed);
+            SetFiled2(embed);
+            SetFiled3_1(embed);
+            SetFiledTemp(embed);
+            SetFiled3_2(embed);
+            SetFiledTemp(embed);
+        }
 
         return embed;
     }
