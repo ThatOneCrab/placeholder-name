@@ -188,34 +188,34 @@ public sealed partial class Main : Form
         SendAll(cmd);
     }
 
-        private void B_RebootStop_Click(object sender, EventArgs e)
+    private void B_RebootStop_Click(object sender, EventArgs e)
+    {
+        B_Stop_Click(sender, e);
+        Task.Run(async () =>
         {
-            B_Stop_Click(sender, e);
-            Task.Run(async () =>
-            {
-                await Task.Delay(3_500).ConfigureAwait(false);
-                SaveCurrentConfig();
+            await Task.Delay(3_500).ConfigureAwait(false);
+            SaveCurrentConfig();
 
-                LogUtil.LogInfo("Restarting all the consoles...", "Form");
-                RunningEnvironment.InitializeStart();
-                SendAll(BotControlCommand.RebootAndStop);
-                Tab_Logs.Select();
+            LogUtil.LogInfo("Restarting all the consoles...", "Form");
+            RunningEnvironment.InitializeStart();
+            SendAll(BotControlCommand.RebootAndStop);
+            Tab_Logs.Select();
 
-                if (Bots.Count == 0)
-                    WinFormsUtil.Alert("No bots configured, but all supporting services have been issued the reboot command.");
-            });
-        }
+            if (Bots.Count == 0)
+                WinFormsUtil.Alert("No bots configured, but all supporting services have been issued the reboot command.");
+        });
+    }
 
-        private void B_New_Click(object sender, EventArgs e)
+    private void B_New_Click(object sender, EventArgs e)
+    {
+        var cfg = CreateNewBotConfig();
+        if (!AddBot(cfg))
         {
-            var cfg = CreateNewBotConfig();
-            if (!AddBot(cfg))
-            {
-                WinFormsUtil.Alert("Unable to add bot; ensure details are valid and not duplicate with an already existing bot.");
-                return;
-            }
-            System.Media.SystemSounds.Asterisk.Play();
+            WinFormsUtil.Alert("Unable to add bot; ensure details are valid and not duplicate with an already existing bot.");
+            return;
         }
+        System.Media.SystemSounds.Asterisk.Play();
+    }
 
     private bool AddBot(PokeBotState cfg)
     {
@@ -296,5 +296,25 @@ public sealed partial class Main : Form
     private void CB_Protocol_SelectedIndexChanged(object sender, EventArgs e)
     {
         TB_IP.Visible = CB_Protocol.SelectedIndex == 0;
+    }
+
+    private void NUD_Port_ValueChanged(object sender, EventArgs e)
+    {
+
+    }
+
+    private void PG_Hub_Click(object sender, EventArgs e)
+    {
+
+    }
+
+    private void Main_Load(object sender, EventArgs e)
+    {
+
+    }
+
+    private void FLP_Bots_Paint(object sender, PaintEventArgs e)
+    {
+
     }
 }
