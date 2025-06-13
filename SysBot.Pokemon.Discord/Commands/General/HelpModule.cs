@@ -1,4 +1,4 @@
-﻿using Discord;
+using Discord;
 using Discord.Commands;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,8 +13,11 @@ public class HelpModule(CommandService Service) : ModuleBase<SocketCommandContex
     public async Task HelpAsync()
     {
         var builder = new EmbedBuilder
+
         {
+            Title = "Help has arrived!",
             Color = new Color(114, 137, 218),
+            ThumbnailUrl = "https://media.discordapp.net/attachments/1234791557396172874/1383064282748682313/72x72_pokeball.png?ex=684d6e7d&is=684c1cfd&hm=20b42111f140319c8ab3933670156cecba8a1f4a1c5e39159c1671b00d8f228f&=&format=webp&quality=lossless.png",
             Description = "These are the commands you can use:",
         };
 
@@ -58,7 +61,7 @@ public class HelpModule(CommandService Service) : ModuleBase<SocketCommandContex
             });
         }
 
-        await ReplyAsync("Help has arrived!", false, builder.Build()).ConfigureAwait(false);
+        await ReplyAsync("", false, builder.Build()).ConfigureAwait(false);
     }
 
     [Command("help")]
