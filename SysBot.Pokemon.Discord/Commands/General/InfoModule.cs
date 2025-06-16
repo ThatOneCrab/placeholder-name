@@ -19,7 +19,7 @@ public class InfoModule : ModuleBase<SocketCommandContext>
     private const string repo = "https://github.com/Manu098vm/SysBot.NET";
     private const string upstream = "https://github.com/kwsch/SysBot.NET";
     private const string repo2 = "https://github.com/ThatOneCrab/placeholder-name";
-    private const string buildversion = "1.0.0";
+    private const string buildversion = "1.0.1";
 
     [Command("info")]
     [Alias("about", "whoami", "owner")]

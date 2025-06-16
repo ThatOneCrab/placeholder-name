@@ -59,7 +59,7 @@ public class PKMString<T> where T : PKM, new()
         string MaleEmoji = Hub.Config.Discord.EmbedSetting.GenderEmojiConfig.Where(x => x.Gender == "Male").Select(x => x.EmojiCode).ToList()[0];
         string FemaleEmoji = Hub.Config.Discord.EmbedSetting.GenderEmojiConfig.Where(x => x.Gender == "Female").Select(x => x.EmojiCode).ToList()[0];
         string NoGenderEmoji = Hub.Config.Discord.EmbedSetting.GenderEmojiConfig.Where(x => x.Gender == "NoGender").Select(x => x.EmojiCode).ToList()[0];
-        return pkm.Gender == 0 ? $"<:GenderEmoji:{MaleEmoji}>" : pkm.Gender == 1 ? $"<:GenderEmoji:{FemaleEmoji}>" : pkm.Gender == 2 ? $"<:GenderEmoji:{NoGenderEmoji}>" : "";
+        return pkm.Gender == 0 ? $"{MaleEmoji}" : pkm.Gender == 1 ? $"{FemaleEmoji}" : pkm.Gender == 2 ? $"{NoGenderEmoji}" : "";
     }
     private string GetAbility(PKM pkm)
     {
@@ -85,7 +85,7 @@ public class PKMString<T> where T : PKM, new()
         {
             int TypeValue = (int)pk9.TeraType;
             var linq = Hub.Config.Discord.EmbedSetting.MoveEmojiConfigs.Where(z => (z.MoveTypeValue == TypeValue)).Select(z => z.EmojiCode);
-            string moveEmoji = linq.ToList()[0] != "" ? $"<:MoveEmoji:{linq.ToList()[0]}> " : "";
+            string moveEmoji = linq.ToList()[0] != "" ? $"{linq.ToList()[0]}" : "";
             return moveEmoji;
         }
 
@@ -122,7 +122,7 @@ public class PKMString<T> where T : PKM, new()
         {
             int moveTypeValue = MoveInfo.GetType(pkm.Moves[moveIndex], default);
             var linq =  Hub.Config.Discord.EmbedSetting.MoveEmojiConfigs.Where( z => (z.MoveTypeValue == moveTypeValue) ).Select( z => z.EmojiCode );
-            string moveEmoji = linq.ToList()[0] != "" ? $"<:MoveEmoji:{linq.ToList()[0]}> " : "";
+            string moveEmoji = linq.ToList()[0] != "" ? $"{linq.ToList()[0]}" : "";
             MovesEmoji.Add( moveEmoji );
         }
             
