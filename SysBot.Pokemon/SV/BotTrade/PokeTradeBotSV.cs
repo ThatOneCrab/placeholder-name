@@ -2,14 +2,15 @@ using PKHeX.Core;
 using PKHeX.Core.Searching;
 using SysBot.Base;
 using System;
+using System.IO;
 using System.Linq;
 using System.Net.Sockets;
+using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using static SysBot.Base.SwitchButton;
 using static SysBot.Pokemon.PokeDataOffsetsSV;
-using System.IO;
-using System.Runtime.InteropServices;
 
 namespace SysBot.Pokemon;
 
@@ -378,7 +379,7 @@ public class PokeTradeBotSV(PokeTradeHub<PK9> Hub, PokeBotState Config) : PokeRo
             return PokeTradeResult.TrainerTooSlow;
         }
 
-        poke.SendNotification(this, $"Found Link Trade partner: {tradePartner.TrainerName}. Waiting for a Pokémon...");
+        poke.SendNotification(this, $"Found Link Trade partner:**{tradePartner.TrainerName}** TID:**{tradePartner.TID7}** SID:**{tradePartner.SID7}** Waiting for a Pokémon...");
 
         if (poke.Type == PokeTradeType.Dump)
         {
