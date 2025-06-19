@@ -120,7 +120,6 @@ public class TemplateTrade<T>(PKM pkm, SocketCommandContext Context, PokeTradeHu
 
         if (!string.IsNullOrEmpty(itemImageUrl))
         {
-            embed.WithThumbnailUrl(itemImageUrl);
         }
     }
 
@@ -219,7 +218,7 @@ public class TemplateTrade<T>(PKM pkm, SocketCommandContext Context, PokeTradeHu
             Author = nonTrade ? null : SetAuthor(),
             Description = nonTrade ? $"<@{Detail.Trainer.ID}> - Added to the {Detail.Type} Queue" : null,
             Footer = SetFooter(positionNum),
-            ImageUrl = image,
+            ThumbnailUrl = image,
 
         };
         if (!nonTrade)

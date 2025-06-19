@@ -19,7 +19,7 @@ public class InfoModule : ModuleBase<SocketCommandContext>
     private const string repo = "https://github.com/Manu098vm/SysBot.NET";
     private const string upstream = "https://github.com/kwsch/SysBot.NET";
     private const string repo2 = "https://github.com/ThatOneCrab/placeholder-name";
-    private const string buildversion = "1.0.1";
+    private const string buildversion = "1.0.2";
 
     [Command("info")]
     [Alias("about", "whoami", "owner")]
@@ -40,7 +40,7 @@ public class InfoModule : ModuleBase<SocketCommandContext>
             $"Thanks to notzyro, santacrab2, berichan and 9Bitdo for portions of code, help and updating.\n" +
             $"- [Upstream Source Code]({upstream}) by kwsch\n" +
             $"Thanks to Kurt, Anubis and Architdate for writing the original SysBot code.\n" +
-            $"- {Format.Bold("Owner")}: {app.Owner} ({app.Owner.Id})\n" +
+            $"- {Format.Bold("Owner")}: {app.Owner} <@{app.Owner.Id}>\n" +
             $"- {Format.Bold("Library")}: Discord.Net ({DiscordConfig.Version})\n" +
             $"- {Format.Bold("Uptime")}: {GetUptime()}\n" +
             $"- {Format.Bold("Runtime")}: {RuntimeInformation.FrameworkDescription} {RuntimeInformation.ProcessArchitecture} " +
