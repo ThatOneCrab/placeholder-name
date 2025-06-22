@@ -94,6 +94,10 @@ public static class QueueHelper<T> where T : PKM, new()
             var eta = Info.Hub.Config.Queues.EstimateDelay(position.Position, botct);
             msg += $" Estimated: {eta:F1} minutes.";
         }
+        // Notify in channel
+
+        // Send Embed
+        notifier.TradeEmbed(pk, detail);
         return true;
     }
 
